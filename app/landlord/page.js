@@ -29,10 +29,19 @@ export default function LandlordDashboard() {
   const [error, setError] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [formError, setFormError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({
-    title: "", description: "", propertyType: "BEDSITTER",
-    price: "", county: "", area: "", landmark: "",
+    title: "",
+    roomCount: "",
+    roomTypes: "",
+    roomCharges: "",
+    description: "",
+    propertyType: "HOSTEL_ROOM",
+    price: "",
+    county: "",
+    area: "",
+    landmark: "",
   });
 
   useEffect(() => {
@@ -64,18 +73,35 @@ export default function LandlordDashboard() {
   async function handleSubmitListing(e) {
     e.preventDefault();
     setFormError("");
+    setSuccessMessage("");
     setSubmitting(true);
     const token = localStorage.getItem("token");
     try {
       const res = await fetch("/api/listings", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
-        body: JSON.stringify({ ...form, price: Number(form.price) }),
+        body: JSON.stringify({
+          ...form,
+          price: Number(form.price),
+          roomCount: Number(form.roomCount),
+        }),
       });
       const data = await res.json();
       if (!res.ok) { setFormError(data.error || "Something went wrong."); setSubmitting(false); return; }
-      setForm({ title: "", description: "", propertyType: "BEDSITTER", price: "", county: "", area: "", landmark: "" });
+      setForm({
+        title: "",
+        roomCount: "",
+        roomTypes: "",
+        roomCharges: "",
+        description: "",
+        propertyType: "HOSTEL_ROOM",
+        price: "",
+        county: "",
+        area: "",
+        landmark: "",
+      });
       setShowForm(false);
+      setSuccessMessage(data.reviewNotice || "Thank you for registering your hostel. Your registration is under review and you will receive an approval or rejection email within 1–7 days.");
       setSubmitting(false);
       loadListings(token);
     } catch (err) { setFormError("Could not reach the server."); setSubmitting(false); }
@@ -114,26 +140,53 @@ export default function LandlordDashboard() {
         </div>
 
         <button onClick={() => setShowForm(!showForm)} className="bg-[#2568A8] text-white text-sm font-medium rounded-md px-4 py-2 mb-6">
-          {showForm ? "Cancel" : "+ Submit a new listing"}
+          {showForm ? "Cancel" : "+ Register a hostel"}
         </button>
+
+        {successMessage && (
+          <div className="mb-6 rounded-xl border border-[#1F6F54]/30 bg-[#E7F2ED] px-4 py-3 text-sm text-[#1F6F54]">
+            {successMessage}
+          </div>
+        )}
 
         {showForm && (
           <form onSubmit={handleSubmitListing} className="bg-white border border-[#D3DCE0] rounded-xl p-6 mb-8 space-y-4">
-            <h2 className="font-semibold text-[#142430]">New listing</h2>
+            <h2 className="font-semibold text-[#142430]">Hostel registration</h2>
+            <p className="text-sm text-gray-500">Share your hostel details and we will review the registration before it goes live.</p>
 
-            <div>
-              <label className="block text-sm font-medium text-[#142430] mb-1">Title</label>
-              <input name="title" value={form.title} onChange={handleFormChange} required
-                placeholder="e.g. Bedsitter near JKUAT gate A" className="w-full border border-[#D3DCE0] rounded-md px-3 py-2 text-sm" />
+            <div className="grid gap-4 md:grid-cols-2">
+              <div>
+                <label className="block text-sm font-medium text-[#142430] mb-1">Title</label>
+                <input name="title" value={form.title} onChange={handleFormChange} required
+                  placeholder="e.g. Green Valley Hostel" className="w-full border border-[#D3DCE0] rounded-md px-3 py-2 text-sm" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-[#142430] mb-1">Number of rooms</label>
+                <input type="number" name="roomCount" value={form.roomCount} onChange={handleFormChange} required min="1"
+                  className="w-full border border-[#D3DCE0] rounded-md px-3 py-2 text-sm" />
+              </div>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <div>
+                <label className="block text-sm font-medium text-[#142430] mb-1">Room types</label>
+                <input name="roomTypes" value={form.roomTypes} onChange={handleFormChange} required
+                  placeholder="Single, Double, Self-contained" className="w-full border border-[#D3DCE0] rounded-md px-3 py-2 text-sm" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-[#142430] mb-1">Room charges</label>
+                <input name="roomCharges" value={form.roomCharges} onChange={handleFormChange} required
+                  placeholder="Single: KES 8000, Double: KES 12000" className="w-full border border-[#D3DCE0] rounded-md px-3 py-2 text-sm" />
+              </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-[#142430] mb-1">Description</label>
+              <label className="block text-sm font-medium text-[#142430] mb-1">Short description</label>
               <textarea name="description" value={form.description} onChange={handleFormChange} required rows={3}
-                placeholder="What makes this place worth renting?" className="w-full border border-[#D3DCE0] rounded-md px-3 py-2 text-sm" />
+                placeholder="Mention Wi-Fi, shared kitchen, security, location perks..." className="w-full border border-[#D3DCE0] rounded-md px-3 py-2 text-sm" />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid gap-4 md:grid-cols-2">
               <div>
                 <label className="block text-sm font-medium text-[#142430] mb-1">Property type</label>
                 <select name="propertyType" value={form.propertyType} onChange={handleFormChange}
@@ -142,13 +195,13 @@ export default function LandlordDashboard() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-[#142430] mb-1">Price (KES/month)</label>
+                <label className="block text-sm font-medium text-[#142430] mb-1">Starting room charge (KES/month)</label>
                 <input type="number" name="price" value={form.price} onChange={handleFormChange} required min="1"
                   className="w-full border border-[#D3DCE0] rounded-md px-3 py-2 text-sm" />
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid gap-4 md:grid-cols-2">
               <div>
                 <label className="block text-sm font-medium text-[#142430] mb-1">County</label>
                 <input name="county" value={form.county} onChange={handleFormChange} required
@@ -171,20 +224,24 @@ export default function LandlordDashboard() {
               <p className="text-sm text-[#B4462F] bg-[#FBEDEA] border border-[#B4462F]/30 rounded-md px-3 py-2">{formError}</p>
             )}
 
+            <div className="rounded-lg border border-[#D3DCE0] bg-[#F9FBFC] px-3 py-3 text-sm text-gray-600">
+              Thank you for registering. Your hostel will be reviewed within 1–7 days, and an approval or rejection message will be sent to your email.
+            </div>
+
             <button type="submit" disabled={submitting} className="bg-[#2568A8] text-white text-sm font-medium rounded-md px-4 py-2 disabled:opacity-50">
-              {submitting ? "Submitting..." : "Submit for review"}
+              {submitting ? "Registering..." : "Register hostel"}
             </button>
           </form>
         )}
 
-        <h2 className="font-semibold text-[#142430] mb-3">Your listings</h2>
+        <h2 className="font-semibold text-[#142430] mb-3">Your registrations</h2>
 
         {loading ? (
           <p className="text-sm text-gray-500">Loading...</p>
         ) : error ? (
           <p className="text-sm text-[#B4462F]">{error}</p>
         ) : listings.length === 0 ? (
-          <p className="text-sm text-gray-500">You haven&apos;t submitted any listings yet.</p>
+          <p className="text-sm text-gray-500">You haven't submitted any listings yet.</p>
         ) : (
           <div className="space-y-3">
             {listings.map((listing) => (

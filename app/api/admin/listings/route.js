@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getUserFromRequest } from "@/lib/auth";
 
-// GET /api/admin/listings — all pending listings, admin only
+// GET /api/admin/listings — pending listings, admin only
 export async function GET(req) {
   const authUser = getUserFromRequest(req);
 

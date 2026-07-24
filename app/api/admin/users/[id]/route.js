@@ -2,6 +2,34 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getUserFromRequest } from "@/lib/auth";
 
+export async function POST(req, { params }) {
+  const authUser = getUserFromRequest(req);
+  if (!authUser || authUser.role !== "ADMIN") {
+    return NextResponse.json({ error: "Not authorized" }, { status: 403 });
+  }
+
+  const { action } = await req.json();
+  const { id } = await params;
+
+  if (!id) return NextResponse.json({ error: "Missing user id" }, { status: 400 });
+
+  try {
+    if (action === "approve") {
+      const user = await prisma.user.update({ where: { id }, data: { accountStatus: "ACTIVE" } });
+      return NextResponse.json({ user });
+    }
+    if (action === "suspend") {
+      const user = await prisma.user.update({ where: { id }, data: { accountStatus: "SUSPENDED" } });
+      return NextResponse.json({ user });
+    }
+
+    return NextResponse.json({ error: "Unknown action" }, { status: 400 });
+  } catch (err) {
+    console.error(err);
+    return NextResponse.json({ error: "Could not update user" }, { status: 500 });
+  }
+}
+
 const VALID_STATUSES = ["PENDING", "ACTIVE", "SUSPENDED"];
 
 // PATCH /api/admin/users/:id — approve, suspend, or reactivate an account

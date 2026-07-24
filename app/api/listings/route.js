@@ -5,6 +5,16 @@ import { validateListingInput } from "@/lib/validate";
 
 const MAX_PENDING_PER_LANDLORD = 10;
 
+function buildRegistrationDescription(body) {
+  const details = [];
+  if (body.hostelName) details.push(`Hostel name: ${body.hostelName}`);
+  if (body.roomCount) details.push(`Number of rooms: ${body.roomCount}`);
+  if (body.roomTypes) details.push(`Room types: ${body.roomTypes}`);
+  if (body.roomCharges) details.push(`Room charges: ${body.roomCharges}`);
+  if (body.description) details.push(`Additional details: ${body.description}`);
+  return details.join("\n");
+}
+
 export async function GET(req) {
   const { searchParams } = new URL(req.url);
   const county = searchParams.get("county");
@@ -83,7 +93,13 @@ export async function POST(req) {
       );
     }
 
-    const { title, description, propertyType, price, county, area, landmark } = body;
+    const title = (body.hostelName || body.title || "").trim();
+    const description = buildRegistrationDescription(body);
+    const propertyType = body.propertyType || "HOSTEL_ROOM";
+    const price = Number(body.price);
+    const county = (body.county || "").trim();
+    const area = (body.area || "").trim();
+    const landmark = (body.landmark || "").trim();
 
     const listing = await prisma.listing.create({
       data: {
@@ -99,7 +115,10 @@ export async function POST(req) {
       },
     });
 
-    return NextResponse.json({ listing }, { status: 201 });
+    return NextResponse.json({
+      listing,
+      reviewNotice: "Thank you for registering your hostel. Your registration is under review and you will receive an approval or rejection email within 1–7 days.",
+    }, { status: 201 });
   } catch (err) {
     console.error(err);
     return NextResponse.json(
