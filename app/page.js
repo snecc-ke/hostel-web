@@ -42,16 +42,9 @@ export default async function HomePage({ searchParams }) {
   const county = params?.county || "";
   const propertyType = params?.type || "";
 
-  const listings = await prisma.listing.findMany({
-    where: {
-      status: "APPROVED",
-      ...(county ? { county: { equals: county, mode: "insensitive" } } : {}),
-      ...(propertyType ? { propertyType } : {}),
-    },
-    orderBy: { createdAt: "desc" },
-    include: { photos: true },
-    take: 12,
-  });
+  // TEMP: bypass Prisma DB query to diagnose blank page issue.
+  // If this renders, the problem is likely a blocking DB call.
+  const listings = [];
 
   return (
     <main className="min-h-screen bg-[linear-gradient(135deg,#f6f8fb_0%,#eef2f4_50%,#f7f3ea_100%)] text-[#142430]">
