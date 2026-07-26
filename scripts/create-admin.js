@@ -21,6 +21,7 @@ async function main() {
     create: {
       fullName,
       email,
+      // Placeholder phone value only exists to satisfy the unique phone constraint for admin seed users.
       phone: `admin-${Date.now()}`,
       passwordHash,
       role: "ADMIN",

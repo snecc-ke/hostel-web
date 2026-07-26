@@ -36,6 +36,12 @@ export async function POST(req, { params }) {
     return NextResponse.json({ error: "A valid image is required." }, { status: 400 });
   }
 
+  if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+    return NextResponse.json({
+      error: "Cloudinary is not configured. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET in .env.",
+    }, { status: 500 });
+  }
+
   try {
     const uploadResult = await cloudinary.uploader.upload(imageBase64, {
       folder: "hostel-platform/listings",

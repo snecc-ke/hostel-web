@@ -23,6 +23,7 @@ model User {
   inquiriesSent    Inquiry[]      @relation("SeekerInquiries")
   reviews          Review[]
   savedListings    SavedListing[]
+  bookingsMade     Booking[]      @relation("SeekerBookings")
   reviewedListings Listing[]      @relation("ListingReviewer")
   reportsFiled     Report[]       @relation("ReportsFiled")
 
@@ -51,9 +52,11 @@ model Listing {
   updatedAt       DateTime      @updatedAt
 
   photos    Photo[]
+  rooms     Room[]
   inquiries Inquiry[]
   reviews   Review[]
   savedBy   SavedListing[]
+  bookings  Booking[]
   payments  Payment[]
   reports   Report[]
 
@@ -73,6 +76,37 @@ model Photo {
 
   @@map("photos")
   @@index([listingId])
+}
+
+model Room {
+  id           String      @id @default(uuid())
+  listingId    String
+  listing      Listing     @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  roomNumber   String?
+  roomCode     String?
+  roomType     String
+  cost         Float
+  details      String?
+  status       String      @default("AVAILABLE")
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  photos       RoomPhoto[]
+  bookings     Booking[]
+
+  @@map("rooms")
+  @@index([listingId])
+}
+
+model RoomPhoto {
+  id        String  @id @default(uuid())
+  roomId    String
+  room      Room    @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  url       String
+  sortOrder Int     @default(0)
+
+  @@map("room_photos")
+  @@index([roomId])
 }
 
 model Inquiry {
@@ -101,6 +135,29 @@ model Review {
 
   @@map("reviews")
   @@index([listingId])
+  @@index([seekerId])
+}
+
+model Booking {
+  id        String   @id @default(uuid())
+  listingId String
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  roomId    String
+  room      Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  seekerId  String
+  seeker    User     @relation("SeekerBookings", fields: [seekerId], references: [id])
+  fullName  String   @default("")
+  phone     String   @default("")
+  message   String?
+  amountPaid Float   @default(0)
+  amountDue  Float   @default(0)
+  status    String   @default("PENDING")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("bookings")
+  @@index([listingId])
+  @@index([roomId])
   @@index([seekerId])
 }
 

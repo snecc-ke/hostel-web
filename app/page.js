@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import ListingCard from "@/components/ListingCard";
 
 const counties = [
@@ -89,11 +89,13 @@ const features = [
   },
 ];
 
-export default async function HomePage({ searchParams }) {
-  const params = searchParams;
-  const county = params?.county || "";
-  const propertyType = params?.type || "";
+export default function HomePage() {
   const [countySearch, setCountySearch] = useState("");
+  const [countyFilter, setCountyFilter] = useState("");
+  const [propertyFilter, setPropertyFilter] = useState("");
+  const [listings, setListings] = useState([]);
+  const [loadingListings, setLoadingListings] = useState(true);
+
   const filteredCounties = useMemo(
     () =>
       counties.filter((countyOption) =>
@@ -104,9 +106,29 @@ export default async function HomePage({ searchParams }) {
     [countySearch],
   );
 
-  // TEMP: bypass Prisma DB query to diagnose blank page issue.
-  // If this renders, the problem is likely a blocking DB call.
-  const listings = [];
+  useEffect(() => {
+    loadListings();
+  }, []);
+
+  async function loadListings() {
+    setLoadingListings(true);
+    const params = new URLSearchParams();
+    if (countyFilter) params.set("county", countyFilter);
+    if (propertyFilter) params.set("type", propertyFilter);
+    try {
+      const res = await fetch(`/api/listings?${params.toString()}`);
+      const data = await res.json();
+      setListings(data.listings || []);
+    } catch (err) {
+      setListings([]);
+    }
+    setLoadingListings(false);
+  }
+
+  async function handleSearch(event) {
+    event.preventDefault();
+    await loadListings();
+  }
 
   return (
     <main className="min-h-screen bg-[linear-gradient(135deg,#f6f8fb_0%,#eef2f4_50%,#f7f3ea_100%)] text-[#142430]">
@@ -160,7 +182,7 @@ export default async function HomePage({ searchParams }) {
               ))}
             </div>
 
-            <form className="mt-8 flex flex-wrap gap-3 rounded-2xl border border-[#D3DCE0] bg-[#F9FBFC] p-3" method="GET">
+            <form onSubmit={handleSearch} className="mt-8 flex flex-wrap gap-3 rounded-2xl border border-[#D3DCE0] bg-[#F9FBFC] p-3">
               <div className="min-w-[220px]">
                 <label htmlFor="countySearch" className="sr-only">Search counties</label>
                 <input
@@ -173,7 +195,7 @@ export default async function HomePage({ searchParams }) {
                 <p className="mt-1 text-xs text-gray-500">Filter counties by name or code, then choose from the dropdown.</p>
               </div>
 
-              <select name="county" defaultValue={county} className="min-w-[220px] rounded-xl border border-[#D3DCE0] bg-white px-3 py-2 text-sm text-[#142430]">
+              <select value={countyFilter} onChange={(event) => setCountyFilter(event.target.value)} className="min-w-[220px] rounded-xl border border-[#D3DCE0] bg-white px-3 py-2 text-sm text-[#142430]">
                 <option value="">Enter your county</option>
                 {filteredCounties.map((countyOption) => (
                   <option value={countyOption.name} key={countyOption.code}>
@@ -182,7 +204,7 @@ export default async function HomePage({ searchParams }) {
                 ))}
               </select>
 
-              <select name="type" defaultValue={propertyType} className="min-w-[160px] rounded-xl border border-[#D3DCE0] bg-white px-3 py-2 text-sm text-[#142430]">
+              <select value={propertyFilter} onChange={(event) => setPropertyFilter(event.target.value)} className="min-w-[160px] rounded-xl border border-[#D3DCE0] bg-white px-3 py-2 text-sm text-[#142430]">
                 <option value="">Property type</option>
                 <option value="BEDSITTER">Bedsitter</option>
                 <option value="SHARED_ROOM">Shared room</option>
@@ -248,7 +270,11 @@ export default async function HomePage({ searchParams }) {
           <p className="text-sm text-gray-500">Fresh listings from trusted landlords near you.</p>
         </div>
 
-        {listings.length === 0 ? (
+        {loadingListings ? (
+          <div className="rounded-[24px] border border-dashed border-[#D3DCE0] bg-white/70 p-8 text-center text-gray-500">
+            Loading listings...
+          </div>
+        ) : listings.length === 0 ? (
           <div className="rounded-[24px] border border-dashed border-[#D3DCE0] bg-white/70 p-8 text-center text-gray-500">
             No listings match yet — try a different county or check back soon.
           </div>

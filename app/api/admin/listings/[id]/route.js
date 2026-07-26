@@ -10,13 +10,21 @@ export async function POST(req, { params }) {
   }
 
   const { action, rejectionReason } = await req.json();
-  const { id } = await params;
+  const { id } = params;
 
   if (!id) return NextResponse.json({ error: "Missing listing id" }, { status: 400 });
 
   try {
     if (action === "approve") {
-      const listing = await prisma.listing.update({ where: { id }, data: { status: "APPROVED" } , include: { landlord: true }});
+      const listing = await prisma.listing.update({
+        where: { id },
+        data: {
+          status: "APPROVED",
+          reviewedById: authUser.id,
+          reviewedAt: new Date(),
+        },
+        include: { landlord: true },
+      });
       // Notify landlord
       try {
         await sendEmail({
@@ -31,7 +39,16 @@ export async function POST(req, { params }) {
     }
 
     if (action === "reject") {
-      const listing = await prisma.listing.update({ where: { id }, data: { status: "REJECTED", rejectionReason: rejectionReason || null }, include: { landlord: true } });
+      const listing = await prisma.listing.update({
+        where: { id },
+        data: {
+          status: "REJECTED",
+          rejectionReason: rejectionReason || null,
+          reviewedById: authUser.id,
+          reviewedAt: new Date(),
+        },
+        include: { landlord: true },
+      });
       // Notify landlord
       try {
         await sendEmail({
@@ -48,6 +65,9 @@ export async function POST(req, { params }) {
     return NextResponse.json({ error: "Unknown action" }, { status: 400 });
   } catch (err) {
     console.error(err);
+    if (err?.code === "P2025") {
+      return NextResponse.json({ error: "Listing not found." }, { status: 404 });
+    }
     return NextResponse.json({ error: "Could not update listing" }, { status: 500 });
   }
 }

@@ -9,7 +9,7 @@ export async function POST(req, { params }) {
   }
 
   const { action } = await req.json();
-  const { id } = await params;
+  const { id } = params;
 
   if (!id) return NextResponse.json({ error: "Missing user id" }, { status: 400 });
 
@@ -26,6 +26,9 @@ export async function POST(req, { params }) {
     return NextResponse.json({ error: "Unknown action" }, { status: 400 });
   } catch (err) {
     console.error(err);
+    if (err?.code === "P2025") {
+      return NextResponse.json({ error: "User not found." }, { status: 404 });
+    }
     return NextResponse.json({ error: "Could not update user" }, { status: 500 });
   }
 }
