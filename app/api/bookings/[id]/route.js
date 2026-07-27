@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getUserFromRequest } from "@/lib/auth";
 import { sendEmail } from "@/lib/email";
+import { syncListingAvailability } from "@/lib/listingAvailability";
 
 export async function PATCH(req, { params }) {
   const authUser = getUserFromRequest(req);
@@ -52,6 +53,10 @@ export async function PATCH(req, { params }) {
     data,
     include: { seeker: true, room: true },
   });
+
+  if (updated.room?.listingId) {
+    await syncListingAvailability(updated.room.listingId);
+  }
 
   if (updated.seeker?.email) {
     let subject = "Booking update";

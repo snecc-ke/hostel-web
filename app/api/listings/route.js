@@ -33,7 +33,10 @@ export async function GET(req) {
     prisma.listing.findMany({
       where,
       orderBy: { createdAt: "desc" },
-      include: { photos: true },
+      include: {
+        photos: true,
+        landlord: { select: { fullName: true, phone: true } },
+      },
       skip: (page - 1) * pageSize,
       take: pageSize,
     }),

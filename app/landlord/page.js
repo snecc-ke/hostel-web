@@ -169,6 +169,29 @@ export default function LandlordDashboard() {
     }
   }
 
+  async function handleUploadListingPhoto(event, listingId) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const token = localStorage.getItem("token");
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      try {
+        const res = await fetch(`/api/listings/${listingId}/photos`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+          body: JSON.stringify({ imageBase64: reader.result }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Photo upload failed.");
+        await loadListings(token);
+        setRoomMessage((prev) => ({ ...prev, [listingId]: "Listing photo uploaded." }));
+      } catch (err) {
+        setRoomMessage((prev) => ({ ...prev, [listingId]: err.message || "Photo upload failed." }));
+      }
+    };
+    reader.readAsDataURL(file);
+  }
+
   async function handleUploadRoomPhoto(event, listingId, roomId) {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -414,6 +437,26 @@ export default function LandlordDashboard() {
 
                   {isExpanded && (
                     <div className="mt-4 rounded-lg border border-[#D3DCE0] bg-[#F9FBFC] p-4 space-y-4">
+                      <div className="rounded-lg border border-[#D3DCE0] bg-white p-3">
+                        <div className="flex items-center justify-between gap-3">
+                          <div>
+                            <p className="text-sm font-semibold text-[#142430]">Listing photos</p>
+                            <p className="text-xs text-gray-500">Add cover photos for this hostel listing.</p>
+                          </div>
+                          <label className="inline-flex cursor-pointer rounded-md border border-[#D3DCE0] px-3 py-2 text-xs font-medium text-[#2568A8]">
+                            Upload photo
+                            <input type="file" accept="image/*" className="hidden" onChange={(event) => handleUploadListingPhoto(event, listing.id)} />
+                          </label>
+                        </div>
+                        {listing.photos && listing.photos.length > 0 && (
+                          <div className="mt-3 flex gap-2 overflow-x-auto">
+                            {listing.photos.map((photo) => (
+                              <img key={photo.id} src={photo.url} alt={listing.title} className="h-20 w-24 rounded-md object-cover" />
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
                       <form onSubmit={(event) => handleAddRoom(event, listing.id)} className="space-y-3">
                         <div className="rounded-md border border-[#D3DCE0] bg-white p-3 text-sm text-gray-600">
                           Enter a starting room number and how many identical rooms you want to add. You can use formats like 101, A1, or B1.

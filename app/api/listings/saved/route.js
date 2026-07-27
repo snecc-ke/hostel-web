@@ -11,7 +11,14 @@ export async function GET(req) {
 
   const saved = await prisma.savedListing.findMany({
     where: { seekerId: authUser.id },
-    include: { listing: { include: { photos: true } } },
+    include: {
+      listing: {
+        include: {
+          photos: true,
+          landlord: { select: { fullName: true, phone: true } },
+        },
+      },
+    },
   });
 
   return NextResponse.json({ saved: saved.map((s) => s.listing) });

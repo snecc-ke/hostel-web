@@ -3,6 +3,29 @@ import { prisma } from "@/lib/prisma";
 import { getUserFromRequest } from "@/lib/auth";
 import cloudinary from "@/lib/cloudinary";
 
+async function extractImageBase64(req) {
+  const contentType = req.headers.get("content-type") || "";
+
+  if (contentType.includes("multipart/form-data")) {
+    const formData = await req.formData();
+    const file = formData.get("file");
+    if (!file || typeof file === "string") {
+      return null;
+    }
+
+    const bytes = Buffer.from(await file.arrayBuffer());
+    const mime = file.type || "image/jpeg";
+    return `data:${mime};base64,${bytes.toString("base64")}`;
+  }
+
+  try {
+    const body = await req.json();
+    return body.imageBase64 || null;
+  } catch {
+    return null;
+  }
+}
+
 export async function POST(req, { params }) {
   const authUser = getUserFromRequest(req);
   if (!authUser || authUser.role !== "LANDLORD") {
@@ -23,7 +46,7 @@ export async function POST(req, { params }) {
     return NextResponse.json({ error: "Room not found." }, { status: 404 });
   }
 
-  const { imageBase64 } = await req.json();
+  const imageBase64 = await extractImageBase64(req);
   if (!imageBase64 || !imageBase64.startsWith("data:image/")) {
     return NextResponse.json({ error: "A valid image is required." }, { status: 400 });
   }

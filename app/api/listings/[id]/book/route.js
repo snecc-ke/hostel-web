@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getUserFromRequest } from "@/lib/auth";
 import { sendEmail } from "@/lib/email";
+import { syncListingAvailability } from "@/lib/listingAvailability";
 
 export async function POST(req, { params }) {
   const authUser = getUserFromRequest(req);
@@ -68,6 +69,7 @@ export async function POST(req, { params }) {
   });
 
   await prisma.room.update({ where: { id: roomId }, data: { status: "BOOKED" } });
+  await syncListingAvailability(id);
 
   try {
     await sendEmail({

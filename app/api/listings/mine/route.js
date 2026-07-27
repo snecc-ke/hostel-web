@@ -13,6 +13,7 @@ export async function GET(req) {
   const listings = await prisma.listing.findMany({
     where: { landlordId: authUser.id },
     orderBy: { createdAt: "desc" },
+    include: { photos: true },
   });
 
   return NextResponse.json({ listings });

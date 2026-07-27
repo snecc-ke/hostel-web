@@ -7,8 +7,7 @@ export default function ListingCard({ listing }) {
   const [saving, setSaving] = useState(false);
   const [contacting, setContacting] = useState(false);
   const [message, setMessage] = useState("");
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [showRooms, setShowRooms] = useState(false);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [rooms, setRooms] = useState([]);
   const [loadingRooms, setLoadingRooms] = useState(false);
   const [bookingRoomId, setBookingRoomId] = useState(null);
@@ -18,7 +17,9 @@ export default function ListingCard({ listing }) {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    setIsLoggedIn(!!token);
+    if (token) {
+      setSaved(false);
+    }
   }, []);
 
   async function handleSaveToggle() {
@@ -108,11 +109,15 @@ export default function ListingCard({ listing }) {
     setLoadingRooms(false);
   }
 
-  function toggleRooms() {
-    if (!showRooms && rooms.length === 0) {
+  function openDetailsView() {
+    setIsDetailsOpen(true);
+    if (rooms.length === 0) {
       loadRooms();
     }
-    setShowRooms(!showRooms);
+  }
+
+  function closeDetailsView() {
+    setIsDetailsOpen(false);
   }
 
   function updateBookingForm(roomId, field, value) {
@@ -180,152 +185,284 @@ export default function ListingCard({ listing }) {
     setBookingRoomId(null);
   }
 
+  const locationText = [listing.area, listing.county].filter(Boolean).join(", ");
+  const landmarkText = listing.landmark || "Nearest landmark details will be shared by the landlord.";
+  const paymentMethodText = listing.paymentMethod || "Contact the landlord for payment details.";
+
   return (
-    <div className="bg-white border border-[#D3DCE0] rounded-xl overflow-hidden relative">
-      <div className="h-32 bg-[#EEF2F4] flex items-center justify-center text-[#8A9187] text-sm">
-        {listing.photos && listing.photos.length > 0 ? (
-          <img src={listing.photos[0].url} alt={listing.title} className="w-full h-full object-cover" />
-        ) : (
-          "No photo yet"
-        )}
-      </div>
-      <div className="p-4">
-        <p className="font-medium text-[#142430]">{listing.title}</p>
-        <p className="text-sm text-gray-500 mb-2">
-          {listing.landmark || (listing.area + ", " + listing.county)}
-        </p>
-        <p className="text-sm text-gray-500 mb-2">
-          {listing.description}
-        </p>
-        <p className="font-semibold text-[#142430] font-mono mb-3">
-          KES {Number(listing.price).toLocaleString()}
-          <span className="text-xs font-normal text-gray-500"> /month</span>
-        </p>
-
-        <div className="flex gap-2 mb-2">
-          <button
-            onClick={handleContact}
-            disabled={contacting}
-            className="flex-1 bg-[#2568A8] text-white text-xs font-medium rounded-md py-2 disabled:opacity-50"
-          >
-            {contacting ? "..." : "Contact via WhatsApp"}
-          </button>
-          <button
-            onClick={handleSaveToggle}
-            disabled={saving}
-            className="border border-[#D3DCE0] rounded-md px-3 py-2 text-xs"
-            title={saved ? "Unsave" : "Save"}
-          >
-            {saved ? "♥" : "♡"}
-          </button>
-        </div>
-
-        <div className="border-t border-[#D3DCE0] pt-3 mt-3">
-          <button onClick={toggleRooms} className="text-xs font-semibold text-[#2568A8]">
-            {showRooms ? "Hide room details" : "View rooms & book"}
-          </button>
-
-          {showRooms && (
-            <div className="mt-3 space-y-3">
-              {loadingRooms ? (
-                <p className="text-xs text-gray-500">Loading rooms...</p>
-              ) : rooms.length === 0 ? (
-                <p className="text-xs text-gray-500">No room details have been posted yet.</p>
-              ) : (
-                rooms.map((room) => (
-                  <div key={room.id} className="rounded-lg border border-[#D3DCE0] bg-[#F9FBFC] p-3">
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <p className="text-sm font-semibold text-[#142430]">
-                          {room.roomCode || room.roomNumber || "Room"} • {room.roomType}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          Room {room.roomNumber || "—"} • {room.roomCode || "—"}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm font-semibold text-[#142430]">KES {Number(room.cost).toLocaleString()}</p>
-                        <p className="text-[11px] uppercase tracking-wide text-gray-500">{room.status}</p>
-                      </div>
-                    </div>
-                    {room.details && <p className="mt-2 text-xs text-gray-600">{room.details}</p>}
-                    {room.photos && room.photos.length > 0 && (
-                      <div className="mt-2 flex gap-2 overflow-x-auto">
-                        {room.photos.map((photo) => (
-                          <img key={photo.id} src={photo.url} alt={room.roomCode || "Room photo"} className="h-20 w-24 rounded-md object-cover" />
-                        ))}
-                      </div>
-                    )}
-                    {room.bookings && room.bookings.length > 0 && (
-                      <div className="mt-3 rounded-md border border-[#D3DCE0] bg-[#F3F7FB] p-3 text-xs text-[#142430]">
-                        <p className="font-semibold">Booking details</p>
-                        <p>Status: {room.bookings[0].status}</p>
-                        <p>Guest: {room.bookings[0].fullName}</p>
-                        <p>Phone: {room.bookings[0].phone}</p>
-                        {room.status === "OCCUPIED" && (
-                          <>
-                            <p>Total paid: KES {Number(room.bookings[0].amountPaid).toLocaleString()}</p>
-                            <p>Amount due: KES {Number(room.bookings[0].amountDue).toLocaleString()}</p>
-                          </>
-                        )}
-                      </div>
-                    )}
-                    {room.status === "AVAILABLE" ? (
-                      <div className="mt-3 flex flex-col gap-2">
-                        <button
-                          onClick={() => {
-                            if (activeBookingRoomId === room.id) {
-                              handleBookRoom(room.id);
-                            } else {
-                              toggleBookingForm(room.id);
-                            }
-                          }}
-                          disabled={bookingRoomId === room.id}
-                          className="rounded-md bg-[#2568A8] px-3 py-2 text-xs font-medium text-white disabled:opacity-50"
-                        >
-                          {bookingRoomId === room.id ? "Booking..." : activeBookingRoomId === room.id ? "Submit booking" : "Book this room"}
-                        </button>
-                        {activeBookingRoomId === room.id && (
-                          <div className="flex flex-col gap-2">
-                            <input
-                              value={bookingForms[room.id]?.fullName || ""}
-                              onChange={(event) => updateBookingForm(room.id, "fullName", event.target.value)}
-                              placeholder="Full name"
-                              className="w-full rounded-md border border-[#D3DCE0] px-2 py-2 text-xs"
-                            />
-                            <input
-                              value={bookingForms[room.id]?.phone || ""}
-                              onChange={(event) => updateBookingForm(room.id, "phone", event.target.value)}
-                              placeholder="Phone number"
-                              className="w-full rounded-md border border-[#D3DCE0] px-2 py-2 text-xs"
-                            />
-                            <textarea
-                              value={bookingForms[room.id]?.message || ""}
-                              onChange={(event) => updateBookingForm(room.id, "message", event.target.value)}
-                              rows={2}
-                              placeholder="Tell the landlord what you like about this room"
-                              className="w-full rounded-md border border-[#D3DCE0] px-2 py-2 text-xs"
-                            />
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <p className="mt-3 text-xs text-gray-500">This room is currently {room.status.toLowerCase()}.</p>
-                    )}
-                  </div>
-                ))
-              )}
-            </div>
+    <>
+      <div
+        className="cursor-pointer rounded-[24px] border border-[#D3DCE0] bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+        onClick={openDetailsView}
+      >
+        <div className="h-36 bg-[#EEF2F4]">
+          {listing.photos && listing.photos.length > 0 ? (
+            <img src={listing.photos[0].url} alt={listing.title} className="h-full w-full object-cover" />
+          ) : (
+            <div className="flex h-full items-center justify-center text-sm text-[#8A9187]">No photo yet</div>
           )}
         </div>
+        <div className="p-4">
+          <p className="font-semibold text-[#142430]">{listing.title}</p>
+          <p className="mt-1 text-sm text-gray-500">{locationText || landmarkText}</p>
+          <p className="mt-2 text-sm text-gray-600">{listing.description}</p>
+          <p className="mt-3 font-semibold text-[#142430]">
+            KES {Number(listing.price).toLocaleString()}
+            <span className="ml-1 text-xs font-normal text-gray-500">/month</span>
+          </p>
 
-        <button onClick={handleReport} className="text-xs text-gray-400 underline mt-3">
-          Report this listing
-        </button>
+          <div className="mt-4 flex gap-2">
+            <button
+              onClick={(event) => {
+                event.stopPropagation();
+                handleContact();
+              }}
+              disabled={contacting}
+              className="flex-1 rounded-md bg-[#2568A8] px-3 py-2 text-xs font-medium text-white disabled:opacity-50"
+            >
+              {contacting ? "..." : "Contact landlord"}
+            </button>
+            <button
+              onClick={(event) => {
+                event.stopPropagation();
+                handleSaveToggle();
+              }}
+              disabled={saving}
+              className="rounded-md border border-[#D3DCE0] px-3 py-2 text-xs"
+              title={saved ? "Unsave" : "Save"}
+            >
+              {saved ? "♥" : "♡"}
+            </button>
+          </div>
 
-        {message && <p className="text-xs text-[#B4462F] mt-2">{message}</p>}
-        {bookingMessage && <p className="text-xs text-[#1F6F54] mt-2">{bookingMessage}</p>}
+          <button
+            onClick={(event) => {
+              event.stopPropagation();
+              openDetailsView();
+            }}
+            className="mt-3 text-xs font-semibold text-[#2568A8]"
+          >
+            View full details
+          </button>
+
+          <button
+            onClick={(event) => {
+              event.stopPropagation();
+              handleReport();
+            }}
+            className="mt-2 text-xs text-gray-400 underline"
+          >
+            Report this listing
+          </button>
+
+          {message && <p className="mt-2 text-xs text-[#B4462F]">{message}</p>}
+        </div>
       </div>
-    </div>
+
+      {isDetailsOpen && (
+        <div
+          className="fixed inset-0 z-50 overflow-y-auto bg-black/70 px-4 py-4 sm:px-6 sm:py-6"
+          onClick={closeDetailsView}
+        >
+          <div
+            className="mx-auto flex min-h-full max-w-6xl flex-col overflow-hidden rounded-[28px] bg-white shadow-2xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="relative h-72 bg-[#EEF2F4] sm:h-80">
+              {listing.photos && listing.photos.length > 0 ? (
+                <img src={listing.photos[0].url} alt={listing.title} className="h-full w-full object-cover" />
+              ) : (
+                <div className="flex h-full items-center justify-center text-[#8A9187]">No photo yet</div>
+              )}
+              <button
+                onClick={closeDetailsView}
+                className="absolute right-4 top-4 rounded-full bg-white/90 px-3 py-2 text-sm font-semibold text-[#142430] shadow"
+              >
+                Close
+              </button>
+            </div>
+
+            <div className="flex-1 px-6 py-6 sm:px-8 lg:px-10">
+              <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+                <div className="max-w-2xl">
+                  <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[#2568A8]">Hostel details</p>
+                  <h2 className="mt-2 text-3xl font-semibold text-[#142430]">{listing.title}</h2>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {locationText && (
+                      <span className="rounded-full border border-[#D3DCE0] bg-[#F9FBFC] px-3 py-1 text-sm text-[#142430]">
+                        {locationText}
+                      </span>
+                    )}
+                    {landmarkText && (
+                      <span className="rounded-full border border-[#D3DCE0] bg-[#F9FBFC] px-3 py-1 text-sm text-[#142430]">
+                        {landmarkText}
+                      </span>
+                    )}
+                  </div>
+                  <p className="mt-4 text-base leading-7 text-gray-600">{listing.description || "More details about this hostel will be shared by the landlord."}</p>
+                </div>
+
+                <div className="rounded-[24px] border border-[#D3DCE0] bg-[#F9FBFC] p-5 shadow-sm lg:min-w-[280px]">
+                  <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#2568A8]">Rent</p>
+                  <p className="mt-2 text-3xl font-semibold text-[#142430]">KES {Number(listing.price).toLocaleString()}</p>
+                  <p className="mt-2 text-sm text-gray-500">{listing.propertyType || "Hostel room"}</p>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <button
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        handleContact();
+                      }}
+                      disabled={contacting}
+                      className="rounded-md bg-[#2568A8] px-3 py-2 text-sm font-medium text-white disabled:opacity-50"
+                    >
+                      {contacting ? "Opening..." : "Contact via WhatsApp"}
+                    </button>
+                    <button
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        handleSaveToggle();
+                      }}
+                      disabled={saving}
+                      className="rounded-md border border-[#D3DCE0] px-3 py-2 text-sm"
+                    >
+                      {saved ? "Saved" : "Save"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-8">
+                <div className="mb-4 flex items-center justify-between">
+                  <h3 className="text-xl font-semibold text-[#142430]">Rooms</h3>
+                  <button onClick={loadRooms} className="text-sm font-medium text-[#2568A8]">
+                    Refresh rooms
+                  </button>
+                </div>
+
+                {loadingRooms ? (
+                  <div className="rounded-[20px] border border-dashed border-[#D3DCE0] bg-[#F9FBFC] p-6 text-center text-sm text-gray-500">
+                    Loading rooms...
+                  </div>
+                ) : rooms.length === 0 ? (
+                  <div className="rounded-[20px] border border-dashed border-[#D3DCE0] bg-[#F9FBFC] p-6 text-center text-sm text-gray-500">
+                    No room details have been posted yet.
+                  </div>
+                ) : (
+                  <div className="grid gap-4 lg:grid-cols-2">
+                    {rooms.map((room) => (
+                      <div key={room.id} className="rounded-[20px] border border-[#D3DCE0] bg-[#F9FBFC] p-4">
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <p className="text-sm font-semibold text-[#142430]">
+                              {room.roomCode || room.roomNumber || "Room"} • {room.roomType}
+                            </p>
+                            <p className="mt-1 text-xs text-gray-500">
+                              Room {room.roomNumber || "—"} • {room.roomCode || "—"}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm font-semibold text-[#142430]">KES {Number(room.cost).toLocaleString()}</p>
+                            <p className="mt-1 text-[11px] uppercase tracking-wide text-gray-500">{room.status}</p>
+                          </div>
+                        </div>
+                        {room.details && <p className="mt-3 text-sm text-gray-600">{room.details}</p>}
+                        {room.photos && room.photos.length > 0 && (
+                          <div className="mt-3 flex gap-2 overflow-x-auto">
+                            {room.photos.map((photo) => (
+                              <img key={photo.id} src={photo.url} alt={room.roomCode || "Room photo"} className="h-20 w-24 rounded-md object-cover" />
+                            ))}
+                          </div>
+                        )}
+                        {room.bookings && room.bookings.length > 0 && (
+                          <div className="mt-3 rounded-lg border border-[#D3DCE0] bg-white p-3 text-sm text-[#142430]">
+                            <p className="font-semibold">Booking update</p>
+                            <p className="mt-1">Status: {room.bookings[0].status}</p>
+                            <p>Guest: {room.bookings[0].fullName}</p>
+                            <p>Phone: {room.bookings[0].phone}</p>
+                            {room.status === "OCCUPIED" && (
+                              <>
+                                <p>Total paid: KES {Number(room.bookings[0].amountPaid).toLocaleString()}</p>
+                                <p>Amount due: KES {Number(room.bookings[0].amountDue).toLocaleString()}</p>
+                              </>
+                            )}
+                          </div>
+                        )}
+                        {room.status === "AVAILABLE" ? (
+                          <div className="mt-4 flex flex-col gap-2 rounded-[16px] border border-[#D3DCE0] bg-[#F9FBFC] p-4">
+                            {!isLoggedIn ? (
+                              <div className="text-sm font-medium text-[#B4462F]">Log in as a seeker to book this room</div>
+                            ) : !isSeeker ? (
+                              <div className="text-sm font-medium text-[#B4462F]">Only seekers can book rooms. Please create a seeker account.</div>
+                            ) : (
+                              <>
+                                <button
+                                  onClick={() => {
+                                    if (activeBookingRoomId === room.id) {
+                                      handleBookRoom(room.id);
+                                    } else {
+                                      toggleBookingForm(room.id);
+                                    }
+                                  }}
+                                  disabled={bookingRoomId === room.id}
+                                  className="rounded-md bg-[#2568A8] px-3 py-2 text-sm font-medium text-white disabled:opacity-50"
+                                >
+                                  {bookingRoomId === room.id ? "Booking..." : activeBookingRoomId === room.id ? "Submit booking" : "Book this room"}
+                                </button>
+                                {activeBookingRoomId === room.id && (
+                                  <div className="flex flex-col gap-2">
+                                    <input
+                                      value={bookingForms[room.id]?.fullName || ""}
+                                      onChange={(event) => updateBookingForm(room.id, "fullName", event.target.value)}
+                                      placeholder="Full name"
+                                      className="w-full rounded-md border border-[#D3DCE0] px-3 py-2 text-sm"
+                                    />
+                                    <input
+                                      value={bookingForms[room.id]?.phone || ""}
+                                      onChange={(event) => updateBookingForm(room.id, "phone", event.target.value)}
+                                      placeholder="Phone number"
+                                      className="w-full rounded-md border border-[#D3DCE0] px-3 py-2 text-sm"
+                                    />
+                                    <textarea
+                                      value={bookingForms[room.id]?.message || ""}
+                                      onChange={(event) => updateBookingForm(room.id, "message", event.target.value)}
+                                      rows={2}
+                                      placeholder="Tell the landlord what you like about this room"
+                                      className="w-full rounded-md border border-[#D3DCE0] px-3 py-2 text-sm"
+                                    />
+                                  </div>
+                                )}
+                              </>
+                            )}
+                          </div>
+                        ) : (
+                          <p className="mt-4 text-sm text-gray-500">This room is currently {room.status.toLowerCase()}.</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <footer className="border-t border-[#D3DCE0] bg-[#F9FBFC] px-6 py-5 sm:px-8 lg:px-10">
+              <div className="grid gap-4 md:grid-cols-3">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#2568A8]">Landlord name</p>
+                  <p className="mt-1 text-sm font-semibold text-[#142430]">{listing.landlord?.fullName || "Landlord"}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#2568A8]">Phone number</p>
+                  <p className="mt-1 text-sm font-semibold text-[#142430]">{listing.landlord?.phone || "Contact via WhatsApp"}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#2568A8]">Payment method</p>
+                  <p className="mt-1 text-sm font-semibold text-[#142430]">{paymentMethodText}</p>
+                </div>
+              </div>
+            </footer>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

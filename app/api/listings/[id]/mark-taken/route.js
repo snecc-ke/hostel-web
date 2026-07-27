@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getUserFromRequest } from "@/lib/auth";
+import { syncListingAvailability } from "@/lib/listingAvailability";
 
 // POST /api/listings/:id/mark-taken — landlord marks their own listing as no longer available
 export async function POST(req, { params }) {

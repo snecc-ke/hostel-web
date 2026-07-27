@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getUserFromRequest } from "@/lib/auth";
+import { syncListingAvailability } from "@/lib/listingAvailability";
 
 function buildRoomNumber(startValue, index) {
   const rawValue = String(startValue || "1").trim();
@@ -99,6 +100,8 @@ export async function POST(req, { params }) {
       createdRooms.push(room);
     }
 
+    await syncListingAvailability(id);
+
     return NextResponse.json({ createdRooms, count: createdRooms.length }, { status: 201 });
   }
 
@@ -113,6 +116,8 @@ export async function POST(req, { params }) {
       status,
     },
   });
+
+  await syncListingAvailability(id);
 
   return NextResponse.json({ room }, { status: 201 });
 }
