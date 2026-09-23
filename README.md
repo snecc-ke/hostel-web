@@ -1,93 +1,16 @@
-# Hostel Platform — Local Development
+# React + Vite
 
-Simple Next.js (App Router) project for managing hostel listings with admin and landlord flows.
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-## Prerequisites
+Currently, two official plugins are available:
 
-- Node.js (18+)
-- npm
-- SQLite (bundled via Prisma)
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
 
-## Setup
+## React Compiler
 
-1. Install dependencies
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
-```bash
-npm install
-```
+## Expanding the ESLint configuration
 
-2. Generate Prisma client
-
-```bash
-npx prisma generate
-```
-
-3. Add environment variables in a `.env` file (copy from `.env.example` if present). Important vars:
-
-```
-DATABASE_URL="file:./dev.db"
-JWT_SECRET=your_jwt_secret
-# Optional SMTP settings (leave unset to log emails to console)
-SMTP_HOST=
-SMTP_PORT=
-SMTP_USER=
-SMTP_PASS=
-FROM_EMAIL=no-reply@hostel.local
-```
-
-## Run (dev)
-
-```bash
-npm run dev
-```
-
-The app will be available at `http://localhost:3000` (or another port if 3000 is in use).
-
-## Create an admin user
-
-Use the included script to create or update an admin account:
-
-```bash
-node scripts/create-admin.js admin@local.test YourStrongPassword "Admin Name"
-```
-
-This will upsert a user with role `ADMIN`.
-
-## Seed a pending listing (optional)
-
-```bash
-node scripts/seed-pending-listing.js [email]
-```
-
-Default landlord email is `landlord1@local.test` if you omit `[email]`.
-
-## Useful scripts
-
-- Create admin: `node scripts/create-admin.js`
-- Seed listing: `node scripts/seed-pending-listing.js`
-- Check listings: `node scripts/check-listings.js`
-
-## Admin UI
-
-Visit `/admin` and sign in with the admin credentials you created. Admins can approve/reject listings.
-
-## Landlord flow
-
-Landlords sign up and register hostels from `/landlord`. Note: the registration form sends the `title` field (labelled "Title") — this aligns with server validation.
-
-## Email
-
-Emails are sent via `lib/email.js`. If SMTP env vars are not configured, emails are logged to the server console for development.
-
-## Key files
-
-- `app/landlord/page.js` — landlord dashboard & registration form
-- `app/admin/page.js` — admin dashboard
-- `app/api/admin/listings/[id]/route.js` — approve/reject listing API
-- `lib/email.js` — email helper (nodemailer + console fallback)
-- `scripts/create-admin.js` — admin creation script
-- `scripts/seed-pending-listing.js` — seed sample listing
-
----
-
-If you want, I can create the admin now and log you in to the admin UI.
+If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
