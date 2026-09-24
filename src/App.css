@@ -34,3 +34,114 @@ body {
 .animate-fade-in {
   animation: fadeIn 0.4s ease-out;
 }
+/* Phone input overrides */
+.phone-input-custom {
+  display: flex;
+  gap: 8px;
+}
+
+.phone-input-custom .PhoneInputCountry {
+  border: 1px solid #D1D5DB;
+  border-radius: 8px;
+  padding: 0 10px;
+  background: white;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.phone-input-custom .PhoneInputCountrySelectArrow {
+  color: #6B7280;
+}
+
+.phone-input-custom .PhoneInputInput {
+  flex: 1;
+  border: 1px solid #D1D5DB;
+  border-radius: 8px;
+  padding: 10px 14px;
+  background: white;
+  color: #111827;
+  font-size: 14px;
+  outline: none;
+  transition: all 0.15s;
+}
+
+.phone-input-custom .PhoneInputInput:focus {
+  border-color: #E9A23B;
+  box-shadow: 0 0 0 3px rgba(233, 162, 59, 0.15);
+}
+
+.phone-input-custom .PhoneInputCountrySelect {
+  cursor: pointer;
+}
+/* Card entrance animation on route change */
+@keyframes cardIn {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) rotate(-3deg) scale(0.95);
+  }
+  60% {
+    transform: translateY(0) rotate(1deg) scale(1.01);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) rotate(0) scale(1);
+  }
+}
+/* Card entrance — runs every time the card remounts */
+@keyframes cardEntrance {
+  0% {
+    opacity: 0;
+    transform: translateY(30px) rotate(-4deg) scale(0.94);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) rotate(0) scale(1);
+  }
+}
+
+.card-entrance {
+  animation: cardEntrance 1.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Right panel fade-in */
+@keyframes rightPanelEntrance {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+.right-panel-entrance {
+  animation: rightPanelEntrance 1s ease-out 0.3s both;
+}
+/* Card flip-in entrance — fade + rotate + scale, slow */
+@keyframes cardFlipEntrance {
+  0% {
+    opacity: 0;
+    transform: translateY(40px) rotateY(-25deg) rotate(-4deg) scale(0.92);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(0) rotateY(5deg) rotate(1deg) scale(1.01);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) rotateY(0) rotate(0) scale(1);
+  }
+}
+
+.card-flip-entrance {
+  animation: cardFlipEntrance 1.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+  transform-origin: center center;
+  perspective: 1200px;
+}
+
+/* Right panel fade-in */
+@keyframes rightPanelFade {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+.right-panel-fade {
+  animation: rightPanelFade 1s ease-out 0.3s both;
+}

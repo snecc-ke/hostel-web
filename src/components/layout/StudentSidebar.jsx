@@ -6,13 +6,13 @@ import {
 } from 'lucide-react';
 
 const menuItems = [
-  { path: '/student/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { path: '/student/bookings', label: 'My Bookings', icon: CalendarCheck },
-  { path: '/student/messages', label: 'Messages', icon: MessageSquare },
-  { path: '/student/payments', label: 'Payments', icon: CreditCard },
-  { path: '/student/saved', label: 'Saved Hostels', icon: Heart },
-  { path: '/student/reviews', label: 'My Reviews', icon: Star },
-  { path: '/student/settings', label: 'Settings', icon: Settings },
+  { path: '/tenant/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { path: '/tenant/bookings', label: 'My Bookings', icon: CalendarCheck },
+  { path: '/tenant/messages', label: 'Messages', icon: MessageSquare },
+  { path: '/tenant/payments', label: 'Payments', icon: CreditCard },
+  { path: '/tenant/saved', label: 'Saved Hostels', icon: Heart },
+  { path: '/tenant/reviews', label: 'My Reviews', icon: Star },
+  { path: '/tenant/settings', label: 'Settings', icon: Settings },
 ];
 
 function StudentSidebar() {
@@ -25,7 +25,7 @@ function StudentSidebar() {
           </div>
           <div>
             <h1 className="text-base font-bold text-white">Hostel Hub</h1>
-            <p className="text-xs text-gray-400">Student Portal</p>
+            <p className="text-xs text-gray-400">Tenant Portal</p>
           </div>
         </div>
       </div>

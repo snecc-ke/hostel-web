@@ -6,8 +6,8 @@ html, body, #root {
 
 body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  background-color: #F7F8FA;
-  color: #111827;
+  background-color: #000000;
+  color: #1B1F27;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -17,20 +17,24 @@ body {
   height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #F7F8FA;
+  background: #000000;
 }
 ::-webkit-scrollbar-thumb {
-  background: #C7CCD4;
+  background: #2A2A2A;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #9CA3AF;
+  background: #E9A23B;
 }
+
+/* Fade-in animation utility */
+.fade-in-delay-1 { opacity: 0; animation: fadeIn 0.8s ease-out 0.3s forwards; }
+.fade-in-delay-2 { opacity: 0; animation: fadeIn 0.8s ease-out 0.9s forwards; }
+.fade-in-delay-3 { opacity: 0; animation: fadeIn 0.8s ease-out 1.5s forwards; }
+.fade-in-delay-4 { opacity: 0; animation: fadeIn 0.8s ease-out 2.1s forwards; }
+.fade-in-delay-5 { opacity: 0; animation: fadeIn 0.8s ease-out 2.7s forwards; }
 
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
-}
-.animate-fade-in {
-  animation: fadeIn 0.4s ease-out;
 }
