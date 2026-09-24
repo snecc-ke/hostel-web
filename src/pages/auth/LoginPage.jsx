@@ -33,11 +33,13 @@ function LoginPage() {
 
   return (
     <div>
+      {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-navy mb-2">Welcome back</h1>
+        <h1 className="text-3xl font-bold mb-2" style={{ color: '#1B1F27' }}>Welcome back</h1>
         <p className="text-gray-500">Sign in to your account to continue</p>
       </div>
 
+      {/* Error Alert */}
       {error && (
         <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
           <AlertCircle size={20} className="text-red-600 flex-shrink-0 mt-0.5" />
@@ -45,9 +47,13 @@ function LoginPage() {
         </div>
       )}
 
+      {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-5">
+        {/* Email */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Email address</label>
+          <label className="block text-sm font-medium mb-2" style={{ color: '#1B1F27' }}>
+            Email address
+          </label>
           <div className="relative">
             <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
@@ -62,8 +68,11 @@ function LoginPage() {
           </div>
         </div>
 
+        {/* Password */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
+          <label className="block text-sm font-medium mb-2" style={{ color: '#1B1F27' }}>
+            Password
+          </label>
           <div className="relative">
             <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
@@ -85,6 +94,7 @@ function LoginPage() {
           </div>
         </div>
 
+        {/* Remember + Forgot */}
         <div className="flex items-center justify-between">
           <label className="flex items-center gap-2 cursor-pointer">
             <input
@@ -93,22 +103,27 @@ function LoginPage() {
               checked={formData.rememberMe}
               onChange={handleChange}
               className="w-4 h-4 rounded border-gray-300"
-              style={{ accentColor: '#D4A24C' }}
+              style={{ accentColor: '#E9A23B' }}
             />
             <span className="text-sm text-gray-600">Remember me</span>
           </label>
           <Link
             to="/forgot-password"
-            className="text-sm font-medium text-info hover:text-blue-700 transition-colors"
+            className="text-sm font-medium hover:opacity-80 transition-colors"
+            style={{ color: '#4A90D9' }}
           >
             Forgot password?
           </Link>
         </div>
 
+        {/* Submit */}
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-gold hover:bg-gold-dark text-navy font-semibold py-3 px-6 rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+          className="w-full font-semibold py-3 px-6 rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+          style={{ backgroundColor: '#E9A23B', color: '#14213D' }}
+          onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#C8862A'}
+          onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#E9A23B'}
         >
           {loading ? (
             <>
@@ -127,15 +142,21 @@ function LoginPage() {
         </button>
       </form>
 
+      {/* Divider */}
       <div className="my-6 flex items-center gap-4">
-        <div className="flex-1 h-px bg-gray-200"></div>
+        <div className="flex-1 h-px bg-gray-300"></div>
         <span className="text-xs text-gray-400 uppercase tracking-wider">or</span>
-        <div className="flex-1 h-px bg-gray-200"></div>
+        <div className="flex-1 h-px bg-gray-300"></div>
       </div>
 
+      {/* Register Link */}
       <p className="text-center text-sm text-gray-600">
         Don't have an account?{' '}
-        <Link to="/register" className="font-semibold text-navy hover:text-gold transition-colors">
+        <Link
+          to="/register"
+          className="font-semibold transition-colors"
+          style={{ color: '#4A90D9' }}
+        >
           Create one now
         </Link>
       </p>

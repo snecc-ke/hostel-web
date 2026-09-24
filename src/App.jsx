@@ -18,8 +18,10 @@ import ContactPage from './pages/public/ContactPage';
 // Auth Pages
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
-
-// Student Pages
+import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
+import ResetPasswordPage from './pages/auth/ResetPasswordPage';
+import VerifyEmailPage from './pages/auth/VerifyEmailPage';
+// Tenant Pages
 import StudentDashboard from './pages/student/StudentDashboard';
 import MyBookings from './pages/student/MyBookings';
 import StudentMessages from './pages/student/Messages';
@@ -64,15 +66,18 @@ function App() {
           <Route path="/contact" element={<ContactPage />} />
         </Route>
 
-        {/* Auth Routes */}
+       {/* Auth Routes */}
         <Route element={<AuthLayout />}>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+          <Route path="/verify-email/:token" element={<VerifyEmailPage />} />
         </Route>
 
-        {/* Student Routes */}
-        <Route path="/student" element={<StudentLayout />}>
-          <Route index element={<Navigate to="/student/dashboard" replace />} />
+        {/* Tenant Routes */}
+        <Route path="/tenant" element={<StudentLayout />}>
+          <Route index element={<Navigate to="/tenant/dashboard" replace />} />
           <Route path="dashboard" element={<StudentDashboard />} />
           <Route path="bookings" element={<MyBookings />} />
           <Route path="messages" element={<StudentMessages />} />
@@ -111,7 +116,7 @@ function App() {
           <Route path="settings" element={<AdminSettings />} />
         </Route>
 
-        {/* 404 */}
+        {/* 404 fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

@@ -8,21 +8,35 @@ export default {
     extend: {
       colors: {
         navy: {
-          DEFAULT: '#1B2A4E',
-          light: '#243A66',
-          dark: '#131E3A',
+          DEFAULT: '#14213D',
+          light: '#1E2E52',
+          dark: '#0D1628',
         },
         gold: {
-          DEFAULT: '#D4A24C',
-          light: '#E0B76E',
-          dark: '#B8893A',
+          DEFAULT: '#E9A23B',
+          light: '#F2B95E',
+          dark: '#C8862A',
         },
-        bg: '#F7F8FA',
-        info: '#3B82C4',
-        text: '#111827',
+        bg: '#F4F6F8',
+        info: '#4A90D9',
+        text: '#1B1F27',
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
+      },
+      keyframes: {
+        blink: {
+          '0%, 100%': { opacity: 1 },
+          '50%': { opacity: 0 },
+        },
+        fadeIn: {
+          '0%': { opacity: 0, transform: 'translateY(8px)' },
+          '100%': { opacity: 1, transform: 'translateY(0)' },
+        },
+      },
+      animation: {
+        blink: 'blink 1s step-end infinite',
+        fadeIn: 'fadeIn 0.8s ease-out forwards',
       },
     },
   },
