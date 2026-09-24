@@ -13,14 +13,14 @@ function Header() {
   ];
 
   return (
-    <header className="sticky top-0 z-40 bg-navy border-b border-navy-light">
+<header className="bg-[#0F1115] border-b border-white/5 sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <Link to="/" className="flex items-center gap-2">
             <div className="w-9 h-9 bg-gold rounded-lg flex items-center justify-center">
               <span className="text-navy font-bold text-lg">H</span>
             </div>
-            <span className="text-xl font-bold text-white">Hostel Hub</span>
+            <span className="text-lg font-bold text-white">Hostel Hub</span>
           </Link>
 
           <nav className="hidden md:flex items-center gap-8">
@@ -47,12 +47,11 @@ function Header() {
               <LogIn size={16} />
               Login
             </Link>
-            <Link
-              to="/register"
-              className="px-4 py-2 bg-gold hover:bg-gold-dark text-navy font-semibold text-sm rounded-lg transition-colors"
-            >
-              Get Started
-            </Link>
+           <Link to="/register">
+  <button className="px-4 py-2 text-sm font-semibold rounded-lg bg-[#E9A23B] text-[#14213D] hover:bg-[#d98a25] active:scale-[0.98] transition-all duration-150">
+    Get Started
+  </button>
+</Link>
           </div>
 
           <button
