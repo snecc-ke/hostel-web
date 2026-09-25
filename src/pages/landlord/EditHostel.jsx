@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
-  ArrowLeft, Plus, Trash2, Check,
+  ArrowLeft, Plus, Trash2, Check, AlertCircle,
 } from 'lucide-react';
 import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
@@ -9,6 +9,7 @@ import Stepper from '../../components/common/Stepper';
 import FileUpload from '../../components/common/FileUpload';
 import Button from '../../components/common/Button';
 import { useToast } from '../../context/ToastContext';
+import { demoHostels } from '../../data/demoData';
 
 const STEPS = [
   { id: 'basic', label: 'Basic Info' },
@@ -26,55 +27,52 @@ const COMMON_AMENITIES = [
 
 const ROOM_TYPES = ['Single Room', 'Bedsitter'];
 
-const DRAFT_KEY = 'add_hostel_draft';
-
-const initialForm = {
-  name: '',
-  description: '',
-  address: '',
-  location: '',
-  contact_phone: '',
-  contact_email: '',
-  amenities: [],
-  photos: [],
-  rooms: [{ type: 'Single Room', price: '', capacity: 1, count: '', occupied: 0 }],
-  agreeTerms: false,
-};
-
-function AddHostel() {
+function EditHostel() {
   const navigate = useNavigate();
   const toast = useToast();
+  const { id } = useParams();
 
   const [currentStep, setCurrentStep] = useState(0);
-  const [maxReachedStep, setMaxReachedStep] = useState(0);
-  const [form, setForm] = useState(initialForm);
+  const [maxReachedStep, setMaxReachedStep] = useState(4);
+  const [form, setForm] = useState(null);
   const [amenityInput, setAmenityInput] = useState('');
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
-  const [draftLoaded, setDraftLoaded] = useState(false);
+  const [loading, setLoading] = useState(true);
 
+  /* ── Load existing hostel data on mount ── */
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(DRAFT_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        setForm({ ...initialForm, ...parsed, photos: [] });
-      }
-    } catch { /* ignore */ }
-    finally { setDraftLoaded(true); }
-  }, []);
+    const hostel = demoHostels.find((h) => String(h.id) === String(id));
+    if (!hostel) {
+      toast.error('Hostel not found');
+      navigate('/landlord/hostels');
+      return;
+    }
 
-  useEffect(() => {
-    if (!draftLoaded) return;
-    try {
-      const { photos, ...serializable } = form;
-      localStorage.setItem(DRAFT_KEY, JSON.stringify(serializable));
-    } catch { /* ignore */ }
-  }, [form, draftLoaded]);
-
-  const clearDraft = () => {
-    try { localStorage.removeItem(DRAFT_KEY); } catch { /* ignore */ }
-  };
+    setForm({
+      name: hostel.name || '',
+      description: hostel.description || '',
+      address: hostel.address || '',
+      location: hostel.location || hostel.city || '',
+      contact_phone: hostel.contact_phone || '',
+      contact_email: hostel.contact_email || '',
+      amenities: hostel.amenities || [],
+      photos: (hostel.gallery || [hostel.image]).filter(Boolean).map((url, i) => ({
+        preview: url,
+        name: `photo-${i + 1}.jpg`,
+        isExisting: true,
+      })),
+      rooms: hostel.roomTypes?.map((rt) => ({
+        type: rt.type || 'Single Room',
+        price: rt.price || '',
+        capacity: rt.capacity || 1,
+        count: rt.count || 10,
+        occupied: rt.occupied || 0,
+      })) || [{ type: 'Single Room', price: '', capacity: 1, count: '', occupied: 0 }],
+      agreeTerms: true,
+    });
+    setLoading(false);
+  }, [id, navigate, toast]);
 
   const update = (key, value) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -155,10 +153,14 @@ function AddHostel() {
       form.rooms.forEach((r, i) => {
         const total = Number(r.count) || 0;
         const occupied = Number(r.occupied) || 0;
-        if (!r.price || Number(r.price) <= 0) errs[`room_price_${i}`] = 'Price must be greater than 0';
-        if (total <= 0) errs[`room_count_${i}`] = 'Total must be greater than 0';
-        if (occupied < 0) errs[`room_occupied_${i}`] = 'Cannot be negative';
-        else if (occupied > total) errs[`room_occupied_${i}`] = 'Cannot exceed total rooms';
+        if (!r.price || Number(r.price) <= 0)
+          errs[`room_price_${i}`] = 'Price must be greater than 0';
+        if (total <= 0)
+          errs[`room_count_${i}`] = 'Total must be greater than 0';
+        if (occupied < 0)
+          errs[`room_occupied_${i}`] = 'Cannot be negative';
+        else if (occupied > total)
+          errs[`room_occupied_${i}`] = 'Cannot exceed total rooms';
       });
     } else if (stepIndex === 4) {
       if (!form.agreeTerms) errs.agreeTerms = 'You must accept the terms';
@@ -191,11 +193,21 @@ function AddHostel() {
     if (!validateStep(4)) return;
     setSubmitting(true);
     await new Promise((r) => setTimeout(r, 900));
-    toast.success('Hostel created successfully');
-    clearDraft();
+    toast.success('Hostel updated successfully');
     setSubmitting(false);
     navigate('/landlord/hostels');
   };
+
+  if (loading || !form) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div
+          className="w-10 h-10 rounded-full animate-spin"
+          style={{ border: '4px solid #E5E7EB', borderTopColor: '#E9A23B' }}
+        />
+      </div>
+    );
+  }
 
   const renderStep = () => {
     switch (currentStep) {
@@ -203,7 +215,8 @@ function AddHostel() {
         return (
           <div className="space-y-5">
             <Field
-              label="Hostel Name" required
+              label="Hostel Name"
+              required
               value={form.name}
               onChange={(v) => update('name', v)}
               placeholder="e.g., Green Valley Hostel"
@@ -217,7 +230,7 @@ function AddHostel() {
                 rows={4}
                 value={form.description}
                 onChange={(e) => update('description', e.target.value)}
-                placeholder="Describe the hostel, its environment, and what makes it special (min 30 chars)"
+                placeholder="Describe the hostel (min 30 chars)"
                 className="w-full px-4 py-2.5 border rounded-lg bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E9A23B] focus:border-[#E9A23B]"
                 style={{ borderColor: errors.description ? '#EF4444' : '#D1D5DB' }}
               />
@@ -225,14 +238,16 @@ function AddHostel() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Field
-                label="Address" required
+                label="Address"
+                required
                 value={form.address}
                 onChange={(v) => update('address', v)}
                 placeholder="Street or plot number"
                 error={errors.address}
               />
               <Field
-                label="Location" required
+                label="Location"
+                required
                 value={form.location}
                 onChange={(v) => update('location', v)}
                 placeholder="e.g., Near Machakos University"
@@ -252,10 +267,14 @@ function AddHostel() {
                   onChange={(v) => update('contact_phone', v || '')}
                   className="phone-input-custom"
                 />
-                {errors.contact_phone && <p className="mt-1 text-sm text-red-500">{errors.contact_phone}</p>}
+                {errors.contact_phone && (
+                  <p className="mt-1 text-sm text-red-500">{errors.contact_phone}</p>
+                )}
               </div>
               <Field
-                label="Contact Email" required type="email"
+                label="Contact Email"
+                required
+                type="email"
                 value={form.contact_email}
                 onChange={(v) => update('contact_email', v)}
                 placeholder="info@hostel.com"
@@ -274,7 +293,9 @@ function AddHostel() {
                 const selected = form.amenities.includes(a);
                 return (
                   <button
-                    key={a} type="button" onClick={() => toggleAmenity(a)}
+                    key={a}
+                    type="button"
+                    onClick={() => toggleAmenity(a)}
                     className="flex items-center gap-2 px-3 py-2.5 rounded-lg border text-sm text-left transition-all"
                     style={{
                       borderColor: selected ? '#E9A23B' : '#E5E7EB',
@@ -307,7 +328,10 @@ function AddHostel() {
                   value={amenityInput}
                   onChange={(e) => setAmenityInput(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter') { e.preventDefault(); addCustomAmenity(); }
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      addCustomAmenity();
+                    }
                   }}
                   placeholder="e.g., Swimming Pool"
                   className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E9A23B] focus:border-[#E9A23B]"
@@ -348,7 +372,7 @@ function AddHostel() {
         return (
           <div className="space-y-4">
             <p className="text-sm text-gray-600">
-              Upload up to 10 photos. The first one will be used as the cover.
+              Update photos. The first one is the cover. Existing photos shown as-is.
             </p>
             <FileUpload
               files={form.photos}
@@ -364,8 +388,7 @@ function AddHostel() {
         return (
           <div className="space-y-5">
             <p className="text-sm text-gray-600">
-              Define room types. The system will auto-generate individual rooms
-              (e.g., "S-101", "BS-201") that you can rename later.
+              Update the room types and occupancy.
             </p>
 
             {form.rooms.map((room, i) => {
@@ -406,19 +429,23 @@ function AddHostel() {
                     <div>
                       <label className="block text-xs font-medium mb-1" style={{ color: '#14213D' }}>Price (KSh/mo)</label>
                       <input
-                        type="number" min="0"
+                        type="number"
+                        min="0"
                         value={room.price}
                         onChange={(e) => updateRoom(i, 'price', e.target.value)}
                         placeholder="15000"
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E9A23B]"
                         style={{ borderColor: errors[`room_price_${i}`] ? '#EF4444' : '#D1D5DB' }}
                       />
-                      {errors[`room_price_${i}`] && <p className="text-xs text-red-500 mt-1">{errors[`room_price_${i}`]}</p>}
+                      {errors[`room_price_${i}`] && (
+                        <p className="text-xs text-red-500 mt-1">{errors[`room_price_${i}`]}</p>
+                      )}
                     </div>
                     <div>
                       <label className="block text-xs font-medium mb-1" style={{ color: '#14213D' }}>Capacity</label>
                       <input
-                        type="number" min="1"
+                        type="number"
+                        min="1"
                         value={room.capacity}
                         onChange={(e) => updateRoom(i, 'capacity', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#E9A23B]"
@@ -427,26 +454,32 @@ function AddHostel() {
                     <div>
                       <label className="block text-xs font-medium mb-1" style={{ color: '#14213D' }}>Total</label>
                       <input
-                        type="number" min="1"
+                        type="number"
+                        min="1"
                         value={room.count}
                         onChange={(e) => updateRoom(i, 'count', e.target.value)}
                         placeholder="10"
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E9A23B]"
                         style={{ borderColor: errors[`room_count_${i}`] ? '#EF4444' : '#D1D5DB' }}
                       />
-                      {errors[`room_count_${i}`] && <p className="text-xs text-red-500 mt-1">{errors[`room_count_${i}`]}</p>}
+                      {errors[`room_count_${i}`] && (
+                        <p className="text-xs text-red-500 mt-1">{errors[`room_count_${i}`]}</p>
+                      )}
                     </div>
                     <div>
                       <label className="block text-xs font-medium mb-1" style={{ color: '#14213D' }}>Occupied</label>
                       <input
-                        type="number" min="0"
+                        type="number"
+                        min="0"
                         value={room.occupied}
                         onChange={(e) => updateRoom(i, 'occupied', e.target.value)}
                         placeholder="0"
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E9A23B]"
                         style={{ borderColor: errors[`room_occupied_${i}`] ? '#EF4444' : '#D1D5DB' }}
                       />
-                      {errors[`room_occupied_${i}`] && <p className="text-xs text-red-500 mt-1">{errors[`room_occupied_${i}`]}</p>}
+                      {errors[`room_occupied_${i}`] && (
+                        <p className="text-xs text-red-500 mt-1">{errors[`room_occupied_${i}`]}</p>
+                      )}
                     </div>
                   </div>
 
@@ -468,7 +501,8 @@ function AddHostel() {
             })}
 
             <button
-              type="button" onClick={addRoom}
+              type="button"
+              onClick={addRoom}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border-2 transition-colors"
               style={{ borderColor: '#E9A23B', color: '#14213D', backgroundColor: 'transparent' }}
               onMouseOver={(e) => (e.currentTarget.style.backgroundColor = 'rgba(233,162,59,0.15)')}
@@ -534,7 +568,12 @@ function AddHostel() {
               </h3>
               <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
                 {form.photos.map((p, i) => (
-                  <img key={i} src={p.preview} alt={p.name} className="w-full h-20 object-cover rounded-lg" />
+                  <img
+                    key={i}
+                    src={p.preview}
+                    alt={p.name}
+                    className="w-full h-20 object-cover rounded-lg"
+                  />
                 ))}
               </div>
             </div>
@@ -563,7 +602,11 @@ function AddHostel() {
                   const occupied = Number(r.occupied) || 0;
                   const vacant = Math.max(total - occupied, 0);
                   return (
-                    <div key={i} className="flex items-center justify-between px-3 py-2 rounded-lg" style={{ backgroundColor: '#F4F6F8' }}>
+                    <div
+                      key={i}
+                      className="flex items-center justify-between px-3 py-2 rounded-lg"
+                      style={{ backgroundColor: '#F4F6F8' }}
+                    >
                       <div className="text-sm">
                         <span className="font-medium" style={{ color: '#14213D' }}>{r.type}</span>
                         <span className="text-gray-500 ml-2">· Capacity {r.capacity}</span>
@@ -615,15 +658,20 @@ function AddHostel() {
           <ArrowLeft size={20} style={{ color: '#14213D' }} />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold" style={{ color: '#E9A23B' }}>Add New Hostel</h1>
+          <h1 className="text-2xl font-bold" style={{ color: '#E9A23B' }}>Edit Hostel</h1>
           <p className="text-sm mt-0.5" style={{ color: '#4B5563' }}>
-            Fill in the details to list your property on Hostel Hub
+            Update the details of <span className="font-medium">{form.name}</span>
           </p>
         </div>
       </div>
 
       <div className="rounded-xl p-5" style={{ backgroundColor: '#F4F6F8', border: '1px solid #E5E7EB' }}>
-        <Stepper steps={STEPS} currentStep={currentStep} maxReachedStep={maxReachedStep} onStepClick={jumpTo} />
+        <Stepper
+          steps={STEPS}
+          currentStep={currentStep}
+          maxReachedStep={maxReachedStep}
+          onStepClick={jumpTo}
+        />
       </div>
 
       <div className="rounded-xl p-6" style={{ backgroundColor: '#F4F6F8', border: '1px solid #E5E7EB' }}>
@@ -632,7 +680,8 @@ function AddHostel() {
 
       <div className="flex items-center justify-between gap-3">
         <button
-          type="button" onClick={goBack}
+          type="button"
+          onClick={goBack}
           disabled={currentStep === 0}
           className="px-5 py-2.5 rounded-lg font-medium text-sm border transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           style={{ borderColor: '#D1D5DB', color: '#14213D', backgroundColor: '#F4F6F8' }}
@@ -642,7 +691,8 @@ function AddHostel() {
 
         {currentStep < STEPS.length - 1 ? (
           <button
-            type="button" onClick={goNext}
+            type="button"
+            onClick={goNext}
             className="px-6 py-2.5 rounded-lg font-semibold text-sm transition-colors"
             style={{ backgroundColor: '#E9A23B', color: '#14213D' }}
             onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#C8862A')}
@@ -652,14 +702,15 @@ function AddHostel() {
           </button>
         ) : (
           <button
-            type="button" onClick={handleSubmit}
+            type="button"
+            onClick={handleSubmit}
             disabled={submitting}
             className="px-6 py-2.5 rounded-lg font-semibold text-sm transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
             style={{ backgroundColor: '#E9A23B', color: '#14213D' }}
             onMouseOver={(e) => !submitting && (e.currentTarget.style.backgroundColor = '#C8862A')}
             onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#E9A23B')}
           >
-            {submitting ? 'Creating...' : 'Create Hostel'}
+            {submitting ? 'Saving...' : 'Save Changes'}
           </button>
         )}
       </div>
@@ -695,4 +746,4 @@ function Summary({ label, value }) {
   );
 }
 
-export default AddHostel;
+export default EditHostel;

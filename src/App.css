@@ -38,17 +38,19 @@ body {
 .phone-input-custom {
   display: flex;
   gap: 8px;
+  width: 100%;
 }
 
 .phone-input-custom .PhoneInputCountry {
   border: 1px solid #D1D5DB;
   border-radius: 8px;
-  padding: 0 10px;
+  padding: 0 12px;
   background: white;
-  height: 44px;
+  height: 46px;
   display: flex;
   align-items: center;
   gap: 6px;
+  flex-shrink: 0;
 }
 
 .phone-input-custom .PhoneInputCountrySelectArrow {
@@ -57,6 +59,7 @@ body {
 
 .phone-input-custom .PhoneInputInput {
   flex: 1;
+  min-width: 0;
   border: 1px solid #D1D5DB;
   border-radius: 8px;
   padding: 10px 14px;
@@ -65,6 +68,7 @@ body {
   font-size: 14px;
   outline: none;
   transition: all 0.15s;
+  height: 46px;
 }
 
 .phone-input-custom .PhoneInputInput:focus {
