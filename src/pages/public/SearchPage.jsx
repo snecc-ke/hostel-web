@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Search as SearchIcon, X } from 'lucide-react';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import EmptyState from '../../components/common/EmptyState';
@@ -95,14 +95,14 @@ function SearchPage() {
       {/* ═══════════════ HERO ═══════════════ */}
       <section className="bg-[#14213D] text-white relative overflow-hidden">
         <div className="absolute inset-0 opacity-10 pointer-events-none">
-          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#E9A23B] rounded-full blur-3xl" />
-          <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-[#4A90D9] rounded-full blur-3xl" />
+          <div className="absolute top-0 right-0 w-125 h-125 bg-[#E9A23B] rounded-full blur-3xl" />
+          <div className="absolute bottom-0 left-0 w-125 h-125 bg-[#4A90D9] rounded-full blur-3xl" />
         </div>
 
         <div className="max-w-4xl mx-auto px-6 py-16 md:py-20 relative text-center">
-          <h1 className="text-3xl md:text-5xl font-bold mb-3 tracking-tight min-h-[48px] md:min-h-[60px]">
+          <h1 className="text-3xl md:text-5xl font-bold mb-3 tracking-tight min-h-12 md:min-h-15">
             {typedTitle}
-            <span className="inline-block w-[3px] h-[1em] bg-[#E9A23B] ml-1 align-middle animate-pulse" />
+            <span className="inline-block w-0.75 h-[1em] bg-[#E9A23B] ml-1 align-middle animate-pulse" />
           </h1>
 
           <p className="text-slate-300 mb-8">

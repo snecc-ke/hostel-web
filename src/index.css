@@ -6,13 +6,8 @@ html, body, #root {
 
 body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
-<<<<<<< HEAD
-  background-color: #F4F6F8;    /* ← ONLY this line changed */
-  color: #111827;
-=======
   background-color: #000000;
   color: #1B1F27;
->>>>>>> 7a7539f2da80949b7da514de7d99ad159d845b96
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

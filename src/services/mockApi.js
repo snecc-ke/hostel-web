@@ -173,7 +173,7 @@ export const mockHostels = [
       '1 Bedroom': ['https://images.unsplash.com/photo-1554995207-c18c203602cb?w=1200'],
       '2 Bedroom': ['https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200'],
     },
-    owner_id: 2,
+    owner_id: 5,
     created_at: '2026-03-15T16:00:00Z',
   },
 ];
@@ -186,6 +186,27 @@ export const mockUsers = [
   { id: 5, email: 'sarah@hostelhub.com', name: 'Sarah Williams', role: 'landlord', email_verified: true, is_active: true, created_at: '2026-02-15T00:00:00Z', last_login: '2026-09-16T11:00:00Z' },
   { id: 6, email: 'peter@hostelhub.com', name: 'Peter Njoroge', role: 'student', email_verified: false, is_active: false, created_at: '2026-03-01T00:00:00Z', last_login: null },
 ];
+
+export const mockLandlords = {
+  2: {
+    id: 2,
+    name: 'John Landlord',
+    email: 'landlord@hostelhub.com',
+    phone: '+254 712 345 678',
+    joined: '2026-01-05',
+    avatar: null,
+    verified: true,
+  },
+  5: {
+    id: 5,
+    name: 'Sarah Williams',
+    email: 'sarah@hostelhub.com',
+    phone: '+254 723 456 789',
+    joined: '2026-02-15',
+    avatar: null,
+    verified: true,
+  },
+};
 
 export const mockAdminStats = {
   users: { total: 1250, students: 1100, landlords: 148, admins: 2 },
